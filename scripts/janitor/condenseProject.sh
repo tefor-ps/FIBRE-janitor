@@ -1,6 +1,12 @@
 #!/bin/bash
 
-for i in $(find /BUP/DATA/tps/labdata/projects/ -type d -name "*-fsdb"); do 
+if [[ -z $1 ]]; then
+    DIR=/BUP/DATA/tps/labdata/projects/
+else
+    DIR="$1"
+fi
+
+for i in $(find "$DIR" -type d -name "*-fsdb"); do 
     echo; 
     echo $i; 
     PID=$(basename $i |cut -d "_" -f 4); 
