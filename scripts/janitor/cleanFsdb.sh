@@ -66,11 +66,25 @@ makeFsdbDir(){
 				out=$(echo $i |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
 				mvImg $i $out
 				if [[ $sddind -gt $fsdbind ]]; then
-					mv -v $sdd ${out}/
+					if [[ $debug -gt 1 ]]; then 
+						mv -v $sdd ${out}/
+					else
+						mv $sdd ${out}/
+					fi
 				else
-					mv -v $out $sdd/..
-					newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
-					mv -v $sdd $newOut
+					if [[ $debug -gt 1 ]]; then 
+		#				mv -v $out $sdd/..
+						rsync -Sauv $out $sdd/..
+						newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
+		#				mv -v $sdd $newOut
+						rsync -Sauv $sdd $newOut
+					else
+		#				mv $out $sdd/..
+						rsync -Sau $out $sdd/..
+						newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
+		#				mv $sdd $newOut
+						rsync -Sau $sdd $newOut
+					fi
 				fi
 			else
 				dbg  "$i in false fsdb-location. Relocating." |tee $LOG
