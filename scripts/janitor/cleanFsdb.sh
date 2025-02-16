@@ -25,6 +25,8 @@ el_index() {
 mvImg(){
 	msg "$i --> $out"  |tee -a $LOG
 	dbg2 "$i --> $out"
+	msg "$i --> $out"  |tee -a $LOG
+	dbg2 "$i --> $out"
 # create fsdb-folder
 	mkdir -pv "$2" >>$LOG 2>&1
 # move image into new folder
@@ -42,10 +44,14 @@ makeFsdbDir(){
 		for i in $(find $(dirname $(realpath "$FILE")) -type f -name "$(basename $FILE)"); do
 			fsdbCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$FSDB_EXT")
 			sdCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$SECDATA_EXT")
+		for i in $(find $(dirname $(realpath "$FILE")) -type f -name "$(basename $FILE)"); do
+			fsdbCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$FSDB_EXT")
+			sdCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$SECDATA_EXT")
             dbg3 "$FSDB_EXT $fsdbCount"
 			if [[ $fsdbCount -eq 0 && $sdCount -eq 0 ]]; then
 				dbg "$i in wrong location. Moving $i into fsdb-location." |tee $LOG
 				out=$(echo "$i" |sed "s@\.$stacktype@$FSDB_EXT@");
+				mvImg "$i" "$out"
 				mvImg "$i" "$out"
 			elif [[ $fsdbCount -eq 1 && $sdCount -eq 0 ]]; then
 				dbg "$i already in fsdb-location. Skipping." |tee $LOG
@@ -54,7 +60,11 @@ makeFsdbDir(){
 				sdd=$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")
 				out=$(echo "$sdd" |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
 				mvImg "$i" "$out"
+				sdd=$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")
+				out=$(echo "$sdd" |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
+				mvImg "$i" "$out"
 				#rsync -Sauv --remove-source-files $sdd $out/ >>$LOG 2>&1
+				mv -v "$sdd" "${out}/"
 				mv -v "$sdd" "${out}/"
 			elif [[ $fsdbCount -eq 1 && $sdCount -eq 1 ]]; then
 				dbg "$i in strange location. Moving $i into fsdb-location." |tee $LOG
@@ -64,25 +74,36 @@ makeFsdbDir(){
 				sdd=$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")
 				out=$(echo "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
 				mvImg "$i" "$out"
+				sdd=$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")
+				out=$(echo "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
+				mvImg "$i" "$out"
 				if [[ $sddind -gt $fsdbind ]]; then
 					if [[ $debug -gt 1 ]]; then 
 						mv -v "$sdd" "${out}/"
+						mv -v "$sdd" "${out}/"
 					else
+						mv "$sdd" "${out}/"
 						mv "$sdd" "${out}/"
 					fi
 				else
 					if [[ $debug -gt 1 ]]; then 
 						mv -v "$out" "$sdd/.." || rsync -Sauv --remove-source-files "$out" "$sdd/.."
+						mv -v "$out" "$sdd/.." || rsync -Sauv --remove-source-files "$out" "$sdd/.."
 						newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
+						mv -v "$sdd" "$newOut" || rsync -Sauv --remove-source-files "$sdd" "$newOut"
 						mv -v "$sdd" "$newOut" || rsync -Sauv --remove-source-files "$sdd" "$newOut"
 					else
 						mv "$out" "$sdd/.." || rsync -Sau --remove-source-files "$out" "$sdd/.."
+						mv "$out" "$sdd/.." || rsync -Sau --remove-source-files "$out" "$sdd/.."
 						newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
+						mv "$sdd" "$newOut" || rsync -Sau --remove-source-files "$sdd" "$newOut"
 						mv "$sdd" "$newOut" || rsync -Sau --remove-source-files "$sdd" "$newOut"
 					fi
 				fi
 			else
 				dbg  "$i in false fsdb-location. Relocating." |tee $LOG
+				out=$(dirname "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
+				mvImg "$i" "$out"
 				out=$(dirname "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
 				mvImg "$i" "$out"
 			fi
@@ -97,6 +118,7 @@ fi
 
 for stacktype in $STACKEXTENSION; do
     for FILE in $(find "$DIR" -type f -name "*${stacktype}"); do 
+        makeFsdbDir "$FILE"
         makeFsdbDir "$FILE"
     done
 done
