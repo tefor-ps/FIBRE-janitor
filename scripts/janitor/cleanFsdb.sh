@@ -73,17 +73,13 @@ makeFsdbDir(){
 					fi
 				else
 					if [[ $debug -gt 1 ]]; then 
-		#				mv -v $out $sdd/..
-						rsync -Sauv --remove-source-files $out $sdd/..
+						mv -v $out $sdd/.. || rsync -Sauv --remove-source-files $out $sdd/..
 						newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
-		#				mv -v $sdd $newOut
-						rsync -Sauv --remove-source-files $sdd $newOut
+						mv -v $sdd $newOut || rsync -Sauv --remove-source-files $sdd $newOut
 					else
-		#				mv $out $sdd/..
-						rsync -Sau --remove-source-files $out $sdd/..
+						mv $out $sdd/.. || rsync -Sau --remove-source-files $out $sdd/..
 						newOut=$(echo $sdd |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
-		#				mv $sdd $newOut
-						rsync -Sau --remove-source-files $sdd $newOut
+						mv $sdd $newOut || rsync -Sau --remove-source-files $sdd $newOut
 					fi
 				fi
 			else
