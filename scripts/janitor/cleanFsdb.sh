@@ -13,7 +13,7 @@ FSDB_EXT="${FSDB_EXT:-${FSDB_EXTDEF}}"
 SECDATA_EXTDEF="-secData"
 SECDATA_EXT="${SECDATA_EXT:-${SECDATA_EXTDEF}}"
 
-var ar=""
+ar=""
 
 el_index() {
     cnt=0; for el in "${ar[@]}"; do
