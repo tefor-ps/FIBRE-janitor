@@ -30,7 +30,7 @@ mvImg(){
 # move image into new folder
 	#rsync -Sauv --remove-source-files $i $out >>$LOG 2>&1
 	ln -v "$1" "$2" >>$LOG 2>&1
-	if [[ "$(dirname $1)" != "$2" ]]; then
+	if [[ $(dirname "$1") != "$2" ]]; then
 		rm -v "$1"
 	fi
 }
@@ -39,20 +39,20 @@ makeFsdbDir(){
 # move files in $STORAGEDIR into their folder
 		FILE="$1"
 #		dbg "moving $(realpath $FILE) into its fsdb-directory" |tee -a $LOG 
-		for i in $(find $(dirname $(realpath "$FILE")) -type f -name "$(basename $FILE)"); do
+		for i in $(find $(dirname "$(realpath "$FILE")") -type f -name "$(basename "$FILE")"); do
 			fsdbCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$FSDB_EXT")
 			sdCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$SECDATA_EXT")
             dbg3 "$FSDB_EXT $fsdbCount"
 			if [[ $fsdbCount -eq 0 && $sdCount -eq 0 ]]; then
 				dbg "$i in wrong location. Moving $i into fsdb-location." |tee $LOG
-				out=$(echo "$i" |sed "s@\.$stacktype@$FSDB_EXT@");
+				out="$(echo "$i" |sed "s@\.$stacktype@$FSDB_EXT@")"
 				mvImg "$i" "$out"
 			elif [[ $fsdbCount -eq 1 && $sdCount -eq 0 ]]; then
 				dbg "$i already in fsdb-location. Skipping." |tee $LOG
 			elif [[ $fsdbCount -eq 0 && $sdCount -eq 1 ]]; then
 				dbg "$i in secData location. Moving $i into fsdb-location." |tee $LOG
-				sdd=$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")
-				out=$(echo "$sdd" |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")
+				sdd="$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")"
+				out="$(echo "$sdd" |sed "s@${SECDATA_EXT}@${FSDB_EXT}@")"
 				mvImg "$i" "$out"
 				#rsync -Sauv --remove-source-files $sdd $out/ >>$LOG 2>&1
 				mv -v "$sdd" "${out}/"
@@ -61,8 +61,8 @@ makeFsdbDir(){
 				ar=($(echo $i |sed 's@/@ @g'))
 				sddind=$(el_index $SECDATA_EXT)
 				fsdbind=$(el_index $FSDB_EXT)
-				sdd=$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")
-				out=$(echo "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
+				sdd="$(echo "$i" |sed "s@${SECDATA_EXT}.*@${SECDATA_EXT}@")"
+				out="$(echo "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")"
 				mvImg "$i" "$out"
 				if [[ $sddind -gt $fsdbind ]]; then
 					if [[ $debug -gt 1 ]]; then 
@@ -83,7 +83,7 @@ makeFsdbDir(){
 				fi
 			else
 				dbg  "$i in false fsdb-location. Relocating." |tee $LOG
-				out=$(dirname "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")
+				out="$(dirname "$i" |sed "s@${FSDB_EXT}.*@${FSDB_EXT}@")"
 				mvImg "$i" "$out"
 			fi
 		done
