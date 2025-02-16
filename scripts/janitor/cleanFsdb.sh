@@ -40,7 +40,7 @@ makeFsdbDir(){
 		FILE="$1"
 #		dbg "moving $(realpath $FILE) into its fsdb-directory" |tee -a $LOG 
 	#	for i in $(find $(dirname "$(realpath "$FILE")") -type f -name "$(basename "$FILE")"); do
-		for i in $(find $(dirname "$FILE") -type f -name "$(basename "$FILE")"); do
+		for i in $(find "$(dirname "$FILE")" -type f -name "$(basename "$FILE")"); do
 			fsdbCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$FSDB_EXT")
 			sdCount=$(dirname "$i" |tr "/" "\n" |grep -ce "$SECDATA_EXT")
             dbg3 "$FSDB_EXT $fsdbCount"
