@@ -29,6 +29,9 @@ README
 
 #TODO: makeProjectLinks is not creating subdirectories
 
+fsdbDir=../../../fsdb-minimal
+debug=2
+
 usage() {
 	printf "Usage: $(basename $0) [-f] [-h] [-p project]  
 	
@@ -105,7 +108,7 @@ shift $((OPTIND-1))
 dbg2 "parameters: $PSTRING $FSTRING"
 dbg3 "search string: $SEARCHSTRING"
 
-# update index - this call gives the user to force the ceartion of a new index before anything else 
+# update index - this call gives the user the power to force the creation of a new index before anything else 
 dbg "forcing new index generation"
 dbg2 "$MAKEINDEX $PSTRING $FSTRING"
 if [[ $debug -gt 0 ]]; then
@@ -113,6 +116,11 @@ if [[ $debug -gt 0 ]]; then
 else
 	bash $MAKEINDEX $PSTRING $FSTRING 2>&1 >> $LOG
 fi
+
+# put the raw data and their secondary data into the right locations
+dbg "move data into the right locations"
+
+
 
 # synchronize the data in the hidden storage location (STORAGESDIR) with the accessible one (LABDATADIR)
 dbg "make sure, that the images are at the right location in $STORAGEDIR and $LABDATADIR"
@@ -122,7 +130,7 @@ if [[ $debug -gt 0 ]]; then
 else
 	bash $CLEANIMPORTS 2>&1 >> $LOG
 fi
-# this is also calling $FIXPERMISSIONS
+# this is also calling $FIXPERMISSIONS which is setting the permissions.
 
 # re-sort data in LABDATADIR/IMPORTS into project based directories in PROJECTSDIR
 dbg "generate project directories"

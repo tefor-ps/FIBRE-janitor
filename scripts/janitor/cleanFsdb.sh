@@ -2,7 +2,7 @@
 
 # set all global variables
 thisDir=$(dirname $(realpath $0))
-source $thisDir/../core/getVar.sh
+source $thisDir/../../../fsdb-minimal/scripts/core/getVar.sh
 
 intro $0
 
