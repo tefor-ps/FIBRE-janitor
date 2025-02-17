@@ -30,7 +30,12 @@ for i in $(find "$DIR" -type d -name "*${FSDB_EXT}" |grep -v "RECYC"); do
     if [[ ! -d "$outDir" ]]; then
         echo "$outDir is not a valid directory for basename $i. Skipping."   #
     else
-        msg "$i --> $outDir/\n"
-        rsync -Sauv "$i" "${outDir}/"
+        msg "$i --> $outDir/"
+        if [[ $debug -gt 1 ]]; then
+            echo
+            rsync -Sauv "$i" "${outDir}/"
+        else
+            rsync -Sau "$i" "${outDir}/"
+        fi
     fi
 done
