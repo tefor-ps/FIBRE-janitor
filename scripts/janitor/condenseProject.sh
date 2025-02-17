@@ -16,7 +16,7 @@ else
     DIR="$1"
 fi
 
-for i in $(find "$DIR" -type d -name "*-fsdb"); do 
+for i in $(find "$DIR" -type d -name "*-fsdb" |grep -v "RECYC"); do 
     echo; 
     echo "$i"; 
     PID=$(basename "$i" |cut -d "_" -f 4); 
