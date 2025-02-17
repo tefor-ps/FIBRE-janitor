@@ -1,7 +1,17 @@
 #!/bin/bash
 
+# set all global variables
+thisDir=$(dirname $(realpath $0))
+source $thisDir/../../../fsdb-minimal/scripts/core/getVar.sh
+
+intro $0
+
+debug=2
+
+dbg $PROJECTSDIR
+
 if [[ -z $1 ]]; then
-    DIR=/BUP/DATA/tps/labdata/projects/
+    DIR=$PROJECTSDIR
 else
     DIR="$1"
 fi
