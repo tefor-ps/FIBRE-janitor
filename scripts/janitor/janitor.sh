@@ -2,12 +2,12 @@
 <<README
 This script is a simple wrapper for other scripts, which are cleaning up the fsdb.
 
-This cleaning mechanism is broken into multiple scripts to give the systems
+This cleaning mechanism is subdivided into multiple scripts to give the systems
 administrator the opportunity of running them also separately through individual
 cron-jobs or manually.
 
 Parameters: 
-This script does not need any parameters however the following parameters can be 
+This script does not need any parameters however the following options can be 
 provided:  
    
 	-p	project/pattern
@@ -17,15 +17,22 @@ provided:
 				
 	-f	force removal of all lock files
 			Remove also the lock files of today. This is made for immediate 
-			re-running a batch e.g., during tewsting or debugging.
-			This function can also be achieved by passing the keyword "today" 
-			as first (and only) parameter to this script.
+			re-running a batch e.g., during testing or debugging.
 
 	-h	help
 			Displays help.
 
+Procedure:
+- index $LABDATADIR and $STORAGEDIR
+- clean the $IMPORTS directories of $LABDATADIR and $STORAGEDIR
+- create project directories at $PROJECTSDIR
+- clean the $EXCHANGEDIR
+- clean temporary data ($LOGDIR, $INDEXDIR, debugger, /tmp/
+- clean $DUMPDIR
+- remove unwanted microscope-specific artifacts
+- remove processing artifacts of the fsdb
 README
-#fsdb-rev-date: 241012
+#fsdb-rev-date: 251015
 
 #TODO: makeProjectLinks is not creating subdirectories
 
@@ -42,7 +49,7 @@ usage() {
 				
 	-f	force removal of all lock files
 			Remove also the lock files of today. This is made for immediate 
-			re-running a batch e.g., during tewsting or debugging.
+			re-running a batch e.g., during testing or debugging.
 
 	-h	help
 			Displays this help.
@@ -74,9 +81,10 @@ intro $0
 #debug=2
 
 FORCEINDEX=0
-PSTRING=""
+PSTRING="" # $PSTRING prefixes '-p ' to the $SEARCHSTRING, so it can be used in directly downstream scripts
+FSTRING="" # $FSTRING is '-f' when $FORCEINDEX is 1, so it can be used in directly downstream scripts
 
-# get parameters/options passed at call of this script
+# get options passed at call of this script
 while getopts ":p:fh" opt; do
 	case $opt in
 		p)
@@ -110,6 +118,7 @@ dbg3 "search string: $SEARCHSTRING"
 
 # update index - this call gives the user the power to force the creation of a new index before anything else 
 dbg "forcing new index generation"
+# $MAKEINDEX is defined in core.config
 dbg2 "$MAKEINDEX $PSTRING $FSTRING"
 if [[ $debug -gt 0 ]]; then
 	bash $MAKEINDEX $PSTRING $FSTRING 2>&1 |tee -a $LOG
@@ -119,8 +128,6 @@ fi
 
 # put the raw data and their secondary data into the right locations
 dbg "move data into the right locations"
-
-
 
 # synchronize the data in the hidden storage location (STORAGESDIR) with the accessible one (LABDATADIR)
 dbg "make sure, that the images are at the right location in $STORAGEDIR and $LABDATADIR"

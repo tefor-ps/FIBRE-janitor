@@ -1,18 +1,20 @@
 #!/bin/bash
 <<README
 This script is cleaning the $EXCHANGEDIR 
-It moves everything older than 30 from $EXCHANGEDIR into the $DUMPDIR
+It moves everything older than $maxAge days from $EXCHANGEDIR into the $DUMPDIR
 
 This script is part of the janitor-job
 
 mode of function:
-- find all files in $EXCHANGEDIR, which are older than 30 days
+- find all files in $EXCHANGEDIR, which are older than $maxAge days
 - generate corresponding directory in $DUMPDIR
 - move these files to $DUMPDIR
 - delete remaining empty folders from $EXCHANGEDIR
 
 README
-#fsdb-rev-date: 230331
+#fsdb-rev-date: 251015
+
+maxAge=60
 
 # set all global variables
 thisDir=$(dirname $(realpath $0))
@@ -26,7 +28,7 @@ tmpList=/tmp/cleanExchange.txt
 
 ## clean exchange
 # make list of files to dump (trashlist)
-find $EXCHANGEDIR/ -mtime +30 |grep -v $INDEXDIR > $tmpList
+find $EXCHANGEDIR/ -mtime +${maxAge} |grep -v $INDEXDIR > $tmpList
 # move items on trashlist to dump
 while read i; do
 	dump=$(dirname $i |sed "s@$EXCHANGEDIR@$DUMPDIR@")
@@ -34,8 +36,9 @@ while read i; do
 	mkdir -p "$dump"
 	mv -f "$i" "$dump"
 done < $tmpList  >>$LOG 2>&1
+# remove remaining empty directories from $EXCHANGEDIR
 find $EXCHANGEDIR -type d -empty -delete >>$LOG 2>&1
-
+# remove trashlist
 rm $tmpList
 
 

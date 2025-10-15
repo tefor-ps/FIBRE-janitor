@@ -29,7 +29,9 @@ underlying conept:
 - log all removals into LOG
 
 README
-#fsdb-rev-date: 241012
+#fsdb-rev-date: 251015
+
+#TODO: correct README (see runner.sh)
 
 usage() {
 	printf "Usage: $(basename $0) [-f] [-h] [-p project]  

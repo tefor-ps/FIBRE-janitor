@@ -8,6 +8,7 @@ mode of function:
 - find in $DUMPDIR all files older than 180 days and remove them.
 - find in $DUMPDIR all empty folders (relicts of cleanup) and remove them.
 README
+#fsdb-rev-date: 251015
 
 # set all global variables
 thisDir=$(dirname $(realpath $0))
