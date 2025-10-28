@@ -1,5 +1,6 @@
 # ==fsdb maintenance==
 MAINTENANCEDIR $FSDBDIR/fsdb-janitor/scripts/janitor
+REPO https://gitlab.com/tefor/fsdb-janitor.git
 
 ### == TOGGLES FOR FILE-SYSTEM RELATED FUNCTIONS==
 PROJECT_FSTOG 1				# <-- populates the PROJECTSDIR
