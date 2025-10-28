@@ -68,13 +68,6 @@ else
 	error "Can't locate getVar.sh."
 fi
 
-# create temporary directory for download and unpacking.
-TMPDIR=$ADMINDIR/tmp-$(basename $0 .sh)
-mkdir -pv "$TMPDIR"
-cd "$TMPDIR" || fail "Can't access $TMPDIR"
-
-repoDir="${FSDBDIR}/$(basename $REPO .git)"
-
 # https://stackoverflow.com/a/226724
 while true; do 
     intro "Do you wish to get configs from ${repo}? [Y/n]: "
@@ -90,17 +83,14 @@ done
 if [[ ! -d $FSDBDIR ]]; then
 	fail "Provide the path to the fsdb-instance you want to import the configs to."
 else
-	intro "Importing configs from $REPO to $FSDBDIR"
-
-# get latest versions from gitlab repo
-	if [[ $getrepo -eq 1 ]]; then
-		if [[ ! -d "$repoDir" ]]; then
-			cd "${FSDBDIR}" || fail
-			git clone $REPO || fail
-		else
-			cd "$repoDir" || fail
-			git pull || fail
-		fi
-	fi
-
+# create temporary directory for download and unpacking.
+	TMPDIR=$(mktemp -d)
+	cd "$TMPDIR" || fail "Can't access $TMPDIR"
+# clone repo into temporary directory	
+	intro "Importing configs from $REPO to $TMPDIR"
+	git clone $REPO || fail
+# rsync (updating) repo into final location 
+	repoDir="$(basename $REPO .git)"
+	mkdir -pv "${repoDir}"
+	sudo rsync -Sauv "${TMPDIR}/${repoDir}/" "${FSDBDIR}/${repoDir}/" || fail 
 fi
