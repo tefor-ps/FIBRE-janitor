@@ -1,6 +1,5 @@
 # ==fsdb maintenance==
 MAINTENANCEDIR $FSDBDIR/fsdb-janitor/scripts/janitor
-REPO https://gitlab.com/tefor/fsdb-janitor.git
 
 ### == TOGGLES FOR FILE-SYSTEM RELATED FUNCTIONS==
 PROJECT_FSTOG 1				# <-- populates the PROJECTSDIR
@@ -17,3 +16,5 @@ CLEANLIFEXT $MAINTENANCEDIR/removeLifext.sh
 FIXLINKS $MAINTENANCEDIR/fixLinks.sh
 MAKEPROJECTDIRS $MAINTENANCEDIR/makeProjectLinks.sh
 
+# ==cron settings==
+JANITOR_CRON 30 22 * * * root ${JANITOR}	# cron-entry for janito (default: run once per day at 22:30)
