@@ -20,6 +20,11 @@ provided:
 
 README
 
+#fsdb-rev-date: 251105, works but may still need revision
+
+#============================
+# function definitions
+#============================
 usage() {
 	printf "Usage: $(basename $0) [-f] [-h] [-p project]  
 	
@@ -51,6 +56,10 @@ functionExplanation
 		usage
 	fi
 }
+
+#============================
+# function calls
+#============================
 
 # find and source getVar.sh to set all global variables
 thisDir=$(dirname $(realpath "$0"))
