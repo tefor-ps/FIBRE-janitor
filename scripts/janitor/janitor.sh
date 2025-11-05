@@ -72,11 +72,29 @@ functionExplanation
 	fi
 }
 
-# set all global variables
-thisDir=$(dirname $(realpath $0))
-source $thisDir/../core/getVar.sh
+# find and source getVar.sh to set all global variables
+thisDir=$(dirname $(realpath "$0"))
+if [[ -z $1 ]]; then
+	if [[ "$thisDir" =~ /fsdb[0-9]{2}/ ]]; then
+		FSDBDIR="$(realpath $thisDir |sed -r 's@(/fsdb[0-9]{2}/).*@\1@')"
+	else
+		FSDBDIR="$(realpath $thisDir/../..)"
+	fi
+	gv=$(find "$FSDBDIR" -type f -name getVar.sh)
+	#source $thisDir/../scripts/core/getVar.sh
+else 
+	gv=$(find "$1" -type f -name getVar.sh)
+	#source $1/core/getVar.sh
+fi
 
-intro $0
+if [[ -f "$gv" ]]; then
+	source "$gv"
+else
+	echo "ERROR: Can't find getVar.sh"
+	exit 555
+fi
+
+intro $(basename $0)
 
 #debug=2
 
@@ -85,6 +103,7 @@ PSTRING="" # $PSTRING prefixes '-p ' to the $SEARCHSTRING, so it can be used in 
 FSTRING="" # $FSTRING is '-f' when $FORCEINDEX is 1, so it can be used in directly downstream scripts
 
 # get options passed at call of this script
+#TODO: implement save-option? 
 while getopts ":p:fh" opt; do
 	case $opt in
 		p)
