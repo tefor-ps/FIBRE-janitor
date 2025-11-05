@@ -57,7 +57,7 @@ makeFsdbDir(){
 		USERDIR=$DIR/$IMPORTS/${user}/
 		if [[ ! -d $USERDIR ]]; then
 			mkdir -p $USERDIR
-		if
+		fi
 		dbg "moving raw data of type ${stacktype} in $DIR/$IMPORTS/${user} into its fsdb-directory" |tee -a $LOG 
 		for i in $(find $USERDIR -maxdepth 1 -mmin +10 -type f -name "*.$stacktype"); do
 			fsdbCount=$(dirname $i |tr "/" "\n" |grep -ce -fsdb)
