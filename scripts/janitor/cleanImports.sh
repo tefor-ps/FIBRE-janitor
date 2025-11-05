@@ -19,9 +19,7 @@ $LABDATADIR/$IMPORTS with $STORAGEDIR/$IMPORTS
 folders are correct.
 
 README
-#fsdb-rev-date: 230331
-
-#TODO: this script currently is running (completely) as many times as users are defined. That's wasteful, fix this, so that it only runs once. looks like the dir-name (e.g., Arnim, Dorian) is not communicated correctly (in the find?)
+#fsdb-rev-date: 251105
 
 # find and source getVar.sh to set all global variables
 thisDir=$(dirname $(realpath "$0"))
@@ -58,7 +56,7 @@ makeFsdbDir(){
 		if [[ ! -d $USERDIR ]]; then
 			mkdir -p $USERDIR
 		fi
-		dbg "moving raw data of type ${stacktype} in $DIR/$IMPORTS/${user} into its fsdb-directory" |tee -a $LOG 
+		dbg2 "moving raw data of type ${stacktype} in $DIR/$IMPORTS/${user} into its fsdb-directory" |tee -a $LOG 
 		for i in $(find $USERDIR -maxdepth 1 -mmin +10 -type f -name "*.$stacktype"); do
 			fsdbCount=$(dirname $i |tr "/" "\n" |grep -ce -fsdb)
 			if [[ $fsdbCount -eq 0 ]]; then
@@ -83,7 +81,7 @@ makeFsdbDir(){
 makeLinks(){
 	INDIR=$1
 	OUTDIR=$2
-	dbg "linking data from $INDIR to $OUTDIR" |tee -a $LOG
+	dbg2 "linking data from $INDIR to $OUTDIR" |tee -a $LOG
 	DIR=$INDIR
 	for DIR in $(find $INDIR/$IMPORTS/${user}/ -type d -name "*$FSDB_EXT"); do
 		for IMAGE in $(find $DIR -type f -name "*.$stacktype"); do
@@ -107,6 +105,6 @@ for user in $USER; do
 		makeLinks $LABDATADIR $STORAGEDIR
 	done
 done
-echo "make sure all permissions are set correctly" |tee -a $LOG
-date  |tee -a $LOG
+dbg2 "make sure all permissions are set correctly" |tee -a $LOG
+dbg $(date)  |tee -a $LOG
 bash $FIXPERMISSIONS
