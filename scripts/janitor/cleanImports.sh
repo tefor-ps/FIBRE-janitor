@@ -54,8 +54,12 @@ intro $(basename $0)
 makeFsdbDir(){
 # move files in $STORAGEDIR into their folder
 		DIR=$1
+		USERDIR=$DIR/$IMPORTS/${user}/
+		if [[ ! -d $USERDIR ]]; then
+			mkdir -p $USERDIR
+		if
 		dbg "moving raw data of type ${stacktype} in $DIR/$IMPORTS/${user} into its fsdb-directory" |tee -a $LOG 
-		for i in $(find $DIR/$IMPORTS/${user}/ -maxdepth 1 -mmin +10 -type f -name "*.$stacktype"); do
+		for i in $(find $USERDIR -maxdepth 1 -mmin +10 -type f -name "*.$stacktype"); do
 			fsdbCount=$(dirname $i |tr "/" "\n" |grep -ce -fsdb)
 			if [[ $fsdbCount -eq 0 ]]; then
 				echo "moving $i into fsdb-location. Skipping." >> $LOG
