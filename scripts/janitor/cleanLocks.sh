@@ -8,125 +8,40 @@ By default only lock files older than 1 day are removed.
 Parameters: 
 This script does not need any parameters however the following parameters can be 
 provided:  
-   
-	-p	project/pattern
-			This is a limiting string, which is included in the 'find' command.
-			Setting this will limit the population of files to files, whose filenames 
-			include this string.
-				
-	-f	force removal of all lock files
-			Remove also the lock files of today. This is made for immediate 
-			re-running a batch e.g., during tewsting or debugging.
-			This function can also be achieved by passing the keyword "today" 
-			as first (and only) parameter to this script.
+if $1 is 'today', ALL lock files will removed; including the ones of today.
 
-	-h	help
-			Displays help.
-
-underlying conept:
-- find lock-files, which need to be removed
-- remove them
-- log all removals into LOG
 
 README
-#fsdb-rev-date: 251015
+#fsdb-rev-date: 251106
 
-#TODO: correct README (see runner.sh)
-
-usage() {
-	printf "Usage: $(basename $0) [-f] [-h] [-p project]  
-	
-	-p	project/pattern
-			This is a limiting string, which is included in the 'find' command.
-			Setting this will limit the population of files to files, whose filenames 
-			include this string.
-				
-	-f	force removal of all lock files
-			Remove also the lock files of today. This is made for immediate 
-			re-running a batch e.g., during tewsting or debugging.
-
-	-h	help
-			Displays this help.
-
-
-" 1>&2;
-	exit 1;
-}
-
-guardian() {
-<<functionExplanation
-The guardian is avoiding the assignment of options (e.g. -p) as arguments by
-excluding everything, which starts with a hyphen from the pool of possible
-arguments.
-functionExplanation
-
-	if [ "$(echo ${1:0:1})" == "-" ]; then
-		warn "Guardian says: Invalid argument: $1" >&2
-		usage
+# find and source getVar.sh to set all global variables
+thisDir=$(dirname $(realpath "$0"))
+if [[ -z $1 || "$1" =~ "-" ]]; then
+	if [[ "$thisDir" =~ /fsdb[0-9]{2}/ ]]; then
+		FSDBDIR="$(realpath $thisDir |sed -r 's@(/fsdb[0-9]{2}/).*@\1@')"
+	else
+		FSDBDIR="$(realpath $thisDir/../..)"
 	fi
-}
+	gv=$(find "$FSDBDIR" -type f -name getVar.sh)
+else 
+	gv=$(find "$1" -type f -name getVar.sh)
+fi
 
+if [[ -f "$gv" ]]; then
+	source "$gv"
+else
+	echo "ERROR: Can't find getVar.sh"
+	exit 555
+fi
 
-# set all global variables
-thisDir=$(dirname $(realpath $0))
-source $thisDir/../core/getVar.sh
+intro $(basename $0)
 
-intro $0
+#debug=3
 
-debug=3
-
-FORCEINDEX=0
-
-# get parameters/options passed at call of this script
-while getopts ":p:fh" opt; do
-	case $opt in
-		p)
-			guardian $OPTARG
-			dbg2 "Option -p was triggered, argument: $OPTARG" 
-			SEARCHSTRING=$OPTARG
-			;;
-		f)
-			guardian $OPTARG
-			dbg2 "Option -f was triggered, this will force index generation"
-			FORCEINDEX=1
-			;;
-		h)
-			usage
-			;;
-		\?)
-			error "Invalid option: -$OPTARG" 
-			exit 1
-			;;
-		:)
-			error "Option -$OPTARG requires an argument." 
-			exit 1
-			;;
-	esac
-done
-shift $((OPTIND-1))
-dbg3 "search string: $SEARCHSTRING"
-
-# define name and location of temporary list of lock files
-tmplist=$WORKDIR/lockfiles
-
-if [[ "$1" == "today" || $FORCINDEX -eq 1 ]]; then
+if [[ "$1" == "today" ]]; then
 # remove all lock files 
-	for i in $(find $LABDATADIR/imports/ -type f -name "*$SEARCHSTRING*.lock"); do
-		dbg $i
-		if [[ $debug -gt 2 ]];then
-			rm -fv $i 2>&1 |tee -a $LOG
-		else
-			rm -fv $i 2>&1 >> $LOG
-		fi
-	done
+	find $LABDATADIR/imports/ -type f -name "*$SEARCHSTRING*.lock" -delete 
 else
 # remove all lock files older than 24h
-	for i in $(find $LABDATADIR/imports/ -type f -mtime +1 -name "*$SEARCHSTRING*.lock"); do
-		dbg $i
-		if [[ $debug -gt 2 ]];then
-			rm -fv $i 2>&1 |tee -a $LOG
-		else
-			rm -fv $i 2>&1 >> $LOG
-		fi
-	done
+	find $LABDATADIR/imports/ -type f -mtime +1 -name "*.lock" -delete 
 fi
