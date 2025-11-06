@@ -37,7 +37,7 @@ README
 #TODO: makeProjectLinks is not creating subdirectories
 
 fsdbDir=../../../fsdb-minimal
-debug=2
+#debug=2
 
 usage() {
 	printf "Usage: $(basename $0) [-f] [-h] [-p project]  
