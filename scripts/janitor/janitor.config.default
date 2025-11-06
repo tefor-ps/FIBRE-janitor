@@ -17,4 +17,6 @@ FIXLINKS $MAINTENANCEDIR/fixLinks.sh
 MAKEPROJECTDIRS $MAINTENANCEDIR/makeProjectLinks.sh
 
 # ==cron settings==
-JANITOR_CRON 30 22 * * * root ${JANITOR}	# cron-entry for janito (default: run once per day at 22:30)
+# VARNAME_CRON m h dom mon dow user command
+JANITOR_CRON 30 23,4 * * * root ${JANITOR}	# cron-entry for janitor (default: run once per day at 22:30)
+
