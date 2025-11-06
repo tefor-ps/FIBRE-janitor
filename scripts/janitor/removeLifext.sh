@@ -3,6 +3,8 @@
 This script removes the Leica lifext-files, which are generated automatically by the LASX software.
 
 README
+#fsdb-rev-date: 251105
+
 
 # find and source getVar.sh to set all global variables
 thisDir=$(dirname $(realpath "$0"))
