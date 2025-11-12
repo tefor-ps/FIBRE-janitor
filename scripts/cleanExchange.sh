@@ -12,7 +12,7 @@ mode of function:
 - delete remaining empty folders from $EXCHANGEDIR
 
 README
-#fsdb-rev-date: 251105
+#fsdb-rev-date: 251112
 
 maxAge=60
 
@@ -25,8 +25,12 @@ if [[ -z $1 || "$1" =~ "-" ]]; then
 		FSDBDIR="$(realpath $thisDir/../..)"
 	fi
 	gv=$(find "$FSDBDIR" -type f -name getVar.sh)
-else 
-	gv=$(find "$1" -type f -name getVar.sh)
+else
+	if [[ -d $1 ]]; then
+		gv=$(find "$1" -type f -name getVar.sh)
+	else
+		gv=$(find $(dirname "$1") -type f -name getVar.sh)
+	fi
 fi
 
 if [[ -f "$gv" ]]; then
@@ -38,7 +42,7 @@ fi
 
 intro $(basename $0)
 
-#debug=3
+#debug=2
 
 tmpList=/tmp/cleanExchange.txt
 

@@ -9,20 +9,41 @@ This script expects two parameters:
 script to files with $SEARCHSTRING in their filename. 
 
 README
-#fsdb-rev-date: 230331
+#fsdb-rev-date: 251112
 
 
 <<SIDENOTE
 mounting via bat-file: https://stackoverflow.com/a/48583228/5269099
 SIDENOTE
 
-# set all global variables
-thisDir=$(dirname $(realpath $0))
-source $thisDir/../core/getVar.sh
+# find and source getVar.sh to set all global variables
+thisDir=$(dirname $(realpath "$0"))
+if [[ -z $1 || "$1" =~ "-" ]]; then
+	if [[ "$thisDir" =~ /fsdb[0-9]{2}/ ]]; then
+		FSDBDIR="$(realpath $thisDir |sed -r 's@(/fsdb[0-9]{2}/).*@\1@')"
+	else
+		FSDBDIR="$(realpath $thisDir/../..)"
+	fi
+	gv=$(find "$FSDBDIR" -type f -name getVar.sh)
+else
+	if [[ -d $1 ]]; then
+		gv=$(find "$1" -type f -name getVar.sh)
+	else
+		gv=$(find $(dirname "$1") -type f -name getVar.sh)
+	fi
+fi
 
-intro $0
+if [[ -f "$gv" ]]; then
+	source "$gv"
+else
+	echo "ERROR: Can't find getVar.sh"
+	exit 555
+fi
 
-debug=3
+intro $(basename $0)
+
+#debug=2
+
 date |tee -a $LOG
 
 # set default values 

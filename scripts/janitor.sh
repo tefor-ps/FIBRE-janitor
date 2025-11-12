@@ -36,9 +36,6 @@ README
 
 #TODO: makeProjectLinks is not creating subdirectories
 
-fsdbDir=../../../fsdb-minimal
-#debug=2
-
 usage() {
 	printf "Usage: $(basename $0) [-f] [-h] [-p project]  
 	
@@ -74,17 +71,19 @@ functionExplanation
 
 # find and source getVar.sh to set all global variables
 thisDir=$(dirname $(realpath "$0"))
-if [[ -z $1 ]]; then
+if [[ -z $1 || "$1" =~ "-" ]]; then
 	if [[ "$thisDir" =~ /fsdb[0-9]{2}/ ]]; then
 		FSDBDIR="$(realpath $thisDir |sed -r 's@(/fsdb[0-9]{2}/).*@\1@')"
 	else
 		FSDBDIR="$(realpath $thisDir/../..)"
 	fi
 	gv=$(find "$FSDBDIR" -type f -name getVar.sh)
-	#source $thisDir/../scripts/core/getVar.sh
-else 
-	gv=$(find "$1" -type f -name getVar.sh)
-	#source $1/core/getVar.sh
+else
+	if [[ -d $1 ]]; then
+		gv=$(find "$1" -type f -name getVar.sh)
+	else
+		gv=$(find $(dirname "$1") -type f -name getVar.sh)
+	fi
 fi
 
 if [[ -f "$gv" ]]; then
