@@ -1,5 +1,5 @@
 # ==fsdb maintenance==
-MAINTENANCEDIR $FSDBDIR/fsdb-janitor/scripts/janitor
+MAINTENANCEDIR $FSDBDIR/fsdb-janitor/scripts
 
 ### == TOGGLES FOR FILE-SYSTEM RELATED FUNCTIONS==
 PROJECT_FSTOG 1				# <-- populates the PROJECTSDIR
