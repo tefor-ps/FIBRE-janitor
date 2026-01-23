@@ -32,17 +32,20 @@ Procedure:
 - remove unwanted microscope-specific artifacts
 - remove processing artifacts of the fsdb
 README
-#fsdb-rev-date: 251015
+#fsdb-rev-date: 260123
 
 #TODO: makeProjectLinks is not creating subdirectories
 
 usage() {
-	printf "Usage: $(basename $0) [-f] [-h] [-p project]  
+	printf "Usage: $(basename $0) [-f] [-h] [-d dir] [-p project]  
 	
 	-p	project/pattern
 			This is a limiting string, which is included in the 'find' command.
 			Setting this will limit the population of files to files, whose filenames 
 			include this string.
+				
+	-d	directory
+			This is the absolute path to the directory, which is supposed to be indexed.
 				
 	-f	force removal of all lock files
 			Remove also the lock files of today. This is made for immediate 
@@ -78,19 +81,35 @@ intro $(basename $0)
 
 #debug=2
 
+# set default values 
+DEFAULTINDIR=$LABDATADIR/$IMPORTS/
+INDIR=$DEFAULTINDIR
+SEARCHSTRING="."
 FORCEINDEX=0
-PSTRING="" # $PSTRING prefixes '-p ' to the $SEARCHSTRING, so it can be used in directly downstream scripts
-FSTRING="" # $FSTRING is '-f' when $FORCEINDEX is 1, so it can be used in directly downstream scripts
+PSTRING="" # $PSTRING prefixes '-p ' to the $SEARCHSTRING, so it can be used directly in downstream scripts
+FSTRING="" # $FSTRING is '-f' when $FORCEINDEX is 1, so it can be used directly in downstream scripts
+DSTRING="" # $DSTRING prefixes '-d ' to the provided directory, so it can be used directly in downstream scripts
 
 # get options passed at call of this script
 #TODO: implement save-option? 
-while getopts ":p:fh" opt; do
+while getopts ":p:d:fh" opt; do
 	case $opt in
 		p)
 			guardian $OPTARG
 			dbg2 "Option -p was triggered, argument: $OPTARG" 
 			SEARCHSTRING=$OPTARG
 			PSTRING="-p $SEARCHSTRING"
+			;;
+		d)
+			guardian $OPTARG
+			dbg2 "Option -d was triggered, argument: $OPTARG"
+			if [[ -d $OPTARG ]]; then
+				INDIR=$(realpath $OPTARG)
+				DSTRING="-d $INDIR"
+			else
+				error "$OPTARG is not a directory."
+				usage
+			fi
 			;;
 		f)
 			guardian $OPTARG
@@ -112,7 +131,7 @@ while getopts ":p:fh" opt; do
 	esac
 done
 shift $((OPTIND-1))
-dbg2 "parameters: $PSTRING $FSTRING"
+dbg2 "parameters: $PSTRING $FSTRING $DSTRING"
 dbg3 "search string: $SEARCHSTRING"
 
 # update index - this call gives the user the power to force the creation of a new index before anything else 
@@ -120,9 +139,9 @@ dbg "forcing new index generation"
 # $MAKEINDEX is defined in core.config
 dbg2 "$MAKEINDEX $PSTRING $FSTRING"
 if [[ $debug -gt 0 ]]; then
-	bash $MAKEINDEX $PSTRING $FSTRING 2>&1 |tee -a $LOG
+	bash $MAKEINDEX $DSTRING $PSTRING $FSTRING 2>&1 |tee -a $LOG
 else
-	bash $MAKEINDEX $PSTRING $FSTRING 2>&1 >> $LOG
+	bash $MAKEINDEX $DSTRING $PSTRING $FSTRING 2>&1 >> $LOG
 fi
 
 # put the raw data and their secondary data into the right locations
@@ -132,9 +151,9 @@ dbg "move data into the right locations"
 dbg "make sure, that the images are at the right location in $STORAGEDIR and $LABDATADIR"
 dbg2 $CLEANIMPORTS
 if [[ $debug -gt 0 ]]; then
-	bash $CLEANIMPORTS 2>&1 |tee -a $LOG
+	bash $CLEANIMPORTS $DSTRING $PSTRING $FSTRING 2>&1 |tee -a $LOG
 else
-	bash $CLEANIMPORTS 2>&1 >> $LOG
+	bash $CLEANIMPORTS $DSTRING $PSTRING $FSTRING 2>&1 >> $LOG
 fi
 # this is also calling $FIXPERMISSIONS which is setting the permissions.
 
