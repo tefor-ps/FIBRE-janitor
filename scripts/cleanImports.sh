@@ -145,7 +145,9 @@ makeFsdbDir(){
 			mkdir -p $USERDIR
 		fi
 		dbg2 "moving raw data of type ${stacktype} in $DIR/$IMPORTS/${user} into its fsdb-directory" |tee -a $LOG 
-		for i in $(find $USERDIR -maxdepth 1 -mmin +10 -type f -name "*.$stacktype"); do
+#		for i in $(find $USERDIR -maxdepth 1 -mmin +10 -type f -name "*.$stacktype"); do
+		for i in $(find $USERDIR -mmin +10 -type f -name "*.$stacktype"); do
+#		for i in $(find $USERDIR -type f -name "*.$stacktype"); do
 			fsdbCount=$(dirname $i |tr "/" "\n" |grep -ce -fsdb)
 			if [[ $fsdbCount -eq 0 ]]; then
 				echo "moving $i into fsdb-location. Skipping." >> $LOG
@@ -186,12 +188,14 @@ makeLinks(){
 # FUNCTION CALLS
 #============================
 
+dbg2 "INDIR: $INDIR"
 if [[ "$INDIR" != "$DEFAULTINDIR" ]]; then
 	for stacktype in $STACKEXTENSION; do
 		makeFsdbDir $INDIR
 		makeLinks $INDIR
 	done
 else
+	dbg2 "USER: $USER"
 	for user in $USER; do
 		dbg "working for $user" |tee -a $LOG
 		for stacktype in $STACKEXTENSION; do
