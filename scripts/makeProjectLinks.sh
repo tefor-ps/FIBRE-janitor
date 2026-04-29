@@ -44,6 +44,56 @@ usage() {
 	exit 1;
 }
 
+function findInImports(){
+	dbg2 "|${TMP}|"
+	#grep -c $TMP $INDEX
+	#grep --color $(echo $i | sed -E 's@.*/([^/]*-fsdb/.*)@\1@') $INDEX
+	if [[ $(grep -c $TMP $INDEX) -gt 0 ]]; then
+		if [[ $md -eq 0 ]]; then
+			dbg2 "ok. ln files in PROJECTS to IMPORTS"
+			#echo "A"
+			#ls -i1 $i
+			#echo "B"
+			#ls -i1 $(grep $TMP $INDEX)
+		else
+			if [[ -f $(grep $TMP $INDEX) ]]; then
+				rd=$(dirname $(grep $TMP $INDEX))
+			else
+				rd=$(grep $TMP $INDEX)
+			fi
+			msg "found root dir of $pd at $rd"
+# create missing directories at IMPORTS
+			missingDirs=$(echo $pd |sed "s@.*$TMP/@@")
+			dbg2 "missingDirs: $missingDirs"
+			linkPath=${rd}/$missingDirs
+			mkdir -pv $linkPath
+			if [[ -d $linkPath ]]; then
+				alert=0
+# create links
+				for target in $(grep -E "$pd/[^/]+$" $PROJECTS); do
+					makeLinks $target $linkPath
+				done
+			else
+				alert=1
+			fi
+		fi
+	else
+		warn "unknown data at $TMP"
+		TMP=$(dirname $TMP)
+#switch to discovery mode (md: make directory)
+		md=1
+		alert=1
+		findInImports
+	fi
+}
+
+function makeLinks(){
+# call as 'makeLinks target linkPath', e.g., 'link this there'
+	dbg2 "sudo ln -f $1 $2"
+#	echo "sudo ln -f $1 $2"
+	sudo ln -f $1 $2 2>/dev/null # link image into dir in PROJECTDIR
+}
+
 guardian() {
 <<functionExplanation
 The guardian is avoiding the assignment of options (e.g. -p) as arguments by
@@ -117,6 +167,10 @@ shift $((OPTIND-1))
 dbg2 "search string: $SEARCHSTRING"
 
 # define local variables
+#PROJECTSDIR=/DATA/tps/labdata/projects/
+PROJECTS=$INDEXDIR/$D.projects.index
+find $PROJECTSDIR -type f > $PROJECTS
+
 INDEX=$INDEXDIR/$D.labdata.index
 RAW=$INDEXDIR/$D.labdata.raw
 TMP=$INDEXDIR/$D.pids.tmp
@@ -129,7 +183,7 @@ if [[ $(find $INDEX -ignore_readdir_race -mmin -$permissibleAgeOfIndex 2> /dev/n
 <<functionExplanation
 The statement '$(find $INDEX -ignore_readdir_race -mmin -$permissibleAgeOfIndex 2> /dev/null)' 
 is TRUE, when $INDEX is younger than $permissibleAgeOfIndex .
-$FORCEINDEX is TRUE when $1 is set 1 in the call of this script.
+$FORCEINDEX is TRUE when the option -f is set in the call of this script.
 functionExplanation
 	ls -l $INDEX  2>&1 |tee -a $LOG
 	dbg "$INDEX is younger than $permissibleAgeOfIndex minutes. Skipping initial index generation." |tee -a $LOG
@@ -195,11 +249,26 @@ for pid in $(cat $PIDs); do
 			if [[ ! -d $linkPath ]]; then
 				mkdir -p -v $linkPath 2>&1 >>$LOG # create dir in PROJECTSDIR
 			fi
-			dbg2 "sudo ln -f $target $linkPath"
-			sudo ln -f $target $linkPath 2>/dev/null # link image into dir in PROJECTDIR
+			#dbg2 "sudo ln -f $target $linkPath"
+			#sudo ln -f $target $linkPath 2>/dev/null # link image into dir in PROJECTDIR
+			makeLinks $target $linkPath # link image into dir in PROJECTDIR
 		fi
 	done
 	sudo chown -R ${ADMIN}:${LAB} $PROJECTSDIR/$pid
 done
 
+# link data from PROJECTSDIR to IMPORTS
+for pd in $(dirname $(grep -e "-fsdb" $PROJECTS) |sort -u); do 
+	dbg2 "--> $pd";
+	TMP=$(echo $pd | sed -E 's@.*/([^/]*-fsdb.*)@\1@')
+	md=0
+	alert=0
+	findInImports
+	if [[ $alert -eq 1 ]]; then
+		warn "WARNING: can't link $pd !" |tee $LOG
+	fi
+	echo
+done
+
 dbg "Done."
+dbg2 "Logs at $LOG"
