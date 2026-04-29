@@ -68,14 +68,14 @@ function findInImports(){
 			linkPath=${rd}/$missingDirs
 			if [[ -d $linkPath ]]; then
 				mkdir -pv $linkPath
-				alert=0
-# create links
-				for target in $(grep -E "$pd/[^/]+$" $PROJECTS); do
-					makeLinks $target $linkPath
-				done
 			else
-				alert=1
+				mkdir -pv $(dirname $linkPath)
 			fi
+# create links
+			for target in $(grep -E "$pd/[^/]+$" $PROJECTS); do
+				makeLinks $target $linkPath
+			done
+			alert=0
 		fi
 	else
 		warn "unknown data at $TMP"
