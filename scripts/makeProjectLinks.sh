@@ -66,8 +66,8 @@ function findInImports(){
 			missingDirs=$(echo $pd |sed "s@.*$TMP/@@")
 			dbg2 "missingDirs: $missingDirs"
 			linkPath=${rd}/$missingDirs
-			mkdir -pv $linkPath
 			if [[ -d $linkPath ]]; then
+				mkdir -pv $linkPath
 				alert=0
 # create links
 				for target in $(grep -E "$pd/[^/]+$" $PROJECTS); do
